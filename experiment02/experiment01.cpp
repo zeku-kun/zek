@@ -6,48 +6,76 @@ using namespace std;
 const int SCREEN_WIDTH = 700;
 const int SCREEN_HEIGHT = 600;
 const char GAME_TITLE[] = "RANDOM THINGS";
-const float gravity = 9.8;
+int gravMult = 1;
+const float gravity = 9.81;
+double deltaTime;
+
 
 class Ball{
     protected:
-    static int obj_count;
+    static int objCount;
 
     public:
-    int pos_x;
-    int pos_y;
+    Vector2 pos = {0 , 0};
     int radius;
     Color color;
+    float velocityY = 0;
+
 
     Ball(){
-        obj_count++;
-        cout<< "Ball " << obj_count << " Created\n";
+        objCount++;
+        cout<< "Ball " << objCount << " Created\n";
     }
     
+    void Movement(){
+        if(IsKeyDown(KEY_D)){
+            pos.x += 5;
+        }
+        if(IsKeyDown(KEY_A)){
+            pos.x += -5;
+        }
+        if(IsKeyDown(KEY_SPACE) && pos.y >= SCREEN_HEIGHT - radius){
+            velocityY = -9.8;
+            pos.y += velocityY;
+        }
+    }
+
     void Boundary(){
-        if(pos_y >= SCREEN_HEIGHT - radius){
-            pos_y = SCREEN_HEIGHT - radius;
+        if(pos.y >= SCREEN_HEIGHT - radius){
+            pos.y = SCREEN_HEIGHT - radius;
+
         }
     }
 
     void Draw(){
-        DrawCircle(pos_x, pos_y, radius, color);
+        DrawCircleV(pos, radius, color);
+    }
+
+    void Gravity(){
+        if(pos.y <= SCREEN_HEIGHT){
+            velocityY += (gravity * gravMult) * (deltaTime);
+            pos.y += velocityY;
+        }
+        /*if(pos.y >= SCREEN_HEIGHT - radius){
+            velocityY = 0;
+        }*/
     }
 
     void Update(){
-        pos_y += gravity, 2;
+        Gravity();
+        Movement();
         Boundary();
     }
 };
 
-int Ball::obj_count = 0 ;
+int Ball::objCount = 0 ;
 Ball ball;
 
 int main(){
     
 
     // Ball
-    ball.pos_x = SCREEN_WIDTH / 2;
-    ball.pos_y = SCREEN_HEIGHT / 2;
+    ball.pos = {SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2};
     ball.radius = 20;
     ball.color = BLACK;
 
@@ -56,6 +84,8 @@ int main(){
     SetTargetFPS(60);
 
     while(!WindowShouldClose()){
+        deltaTime = GetFrameTime();
+        cout << ball.velocityY << ":"<< ball.pos.y << "\n";
         BeginDrawing();
         // Update
         ball.Update();
